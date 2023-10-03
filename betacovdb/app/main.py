@@ -2,15 +2,28 @@ from betacovdb import db_entry
 from betacovdb import db_utils
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.requests import Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+import os
 
 import sqlite3 as sqlite
-
-import typing
 
 import uvicorn
 
 
 app = FastAPI()
+APP_PATH = os.path.abspath(
+    os.path.join(__file__, *(1 * [os.pardir]))
+)
+TEMPLATES_PATH = os.path.join(
+    APP_PATH,
+    "templates",
+)
+TEMPLATES = Jinja2Templates(directory = TEMPLATES_PATH)
+app.mount("/static", StaticFiles(directory = os.path.join(APP_PATH, "static")), name = "static")
 
 
 @app.get("/")
@@ -19,7 +32,7 @@ async def read_root() -> dict[str, str]:
 
 
 @app.get("/ab_ic/{ab_name}")
-async def read_ab_ic(ab_name: str) -> dict[str, list[dict[str, typing.Any]]]:
+async def read_ab_ic(request: Request, ab_name: str) -> HTMLResponse:
     with sqlite.connect(db_utils.DB_PATH) as conn:
         data = db_utils.get_ab_data(conn, ab_name)
     response_data = [
@@ -33,8 +46,10 @@ async def read_ab_ic(ab_name: str) -> dict[str, list[dict[str, typing.Any]]]:
         }
         for id_, name, virus, ic50, source, virus_state in data
     ]
-    return {"entries": response_data}
-
+    return TEMPLATES.TemplateResponse(
+        "read_ab_ic.html",
+        {"request": request, "entries": response_data},
+    )
 
 @app.post("/ab_ic")
 async def add_ab_ic(entry: db_entry.IC50Entry) -> dict[str, str]:
@@ -67,10 +82,6 @@ async def replace_ab_ic(id_: int, entry: db_entry.IC50Entry) -> dict[str, str]:
     return {"message": "Successfully updated entry."}
 
 
-def main() -> int:
+def main() -> None:
     uvicorn.run(app)
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
