@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["betacovdb", "betacovdb.app"]
+
+[project]
+name = "betacovdb"
+version = "1.0.0"
+description = "A database of the Betacoronaviruses."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.scripts]
+restapi = "betacovdb.app.main:main"
