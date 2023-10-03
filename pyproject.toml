@@ -13,6 +13,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi",
+    "jinja2",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
